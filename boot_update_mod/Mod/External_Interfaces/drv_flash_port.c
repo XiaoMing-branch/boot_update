@@ -1,4 +1,5 @@
-#include "flash_port.h"
+#include "drv_flash_port.h"
+#include "main.h"
 /*
 *********************************************************************************************************
 *	函 数 名: hal_flash_lock
@@ -25,9 +26,18 @@ void hal_flash_unlock(void)
 *	功能说明: 中间层接口函数
 *********************************************************************************************************
 */
-RUN_StatusTypeDef hal_flash_write(uint32_t addr, uint8_t* data, uint32_t size)
+RUN_StatusTypeDef hal_flash_write(uint32_t addr, uint8_t* data)
 {
-	
+	RUN_StatusTypeDef re = RUN_ERROR;
+	if(HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, addr, (uint64_t)((uint32_t)data)) == HAL_OK)
+	{
+		re = RUN_OK;
+	}
+	else
+	{
+		re = RUN_ERROR;
+	}
+	return re;
 }
 /*
 *********************************************************************************************************
@@ -63,25 +73,12 @@ RUN_StatusTypeDef hal_flash_page_erase(uint32_t addr)
 	return re;
 }
 
-RUN_StatusTypeDef bsp_flash_write(uint32_t addr, uint8_t* data, uint32_t size)
+void irq_enable(void)
 {
-	
+	__set_PRIMASK(0);
 }
 
-void bsp_flash_read(void)
+void irq_disable(void)
 {
-	
-}
-
-void bsp_flash_page_erase(uint32_t addr)
-{
-	//判断是否在地址范围内并且地址是每一页的首地址
-	if((HAL_FLASH_BASE_ADDR <= addr) && (addr <= HAL_FLASH_END_ADDR) && (addr % HAL_FLASH_PAGE_SIZE == 0))
-	{
-		hal_flash_unlock();
-		
-		hal_flash_page_erase(addr);
-		
-		hal_flash_lock();
-	}
+	__set_PRIMASK(1);
 }

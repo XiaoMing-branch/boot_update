@@ -462,8 +462,20 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\Mod\External_Interfaces\flash_port.c</PathWithFileName>
-      <FilenameWithoutPath>flash_port.c</FilenameWithoutPath>
+      <PathWithFileName>..\Mod\External_Interfaces\drv_flash_port.c</PathWithFileName>
+      <FilenameWithoutPath>drv_flash_port.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>21</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\Mod\External_Interfaces\drv_flash.c</PathWithFileName>
+      <FilenameWithoutPath>drv_flash.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
