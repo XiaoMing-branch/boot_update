@@ -614,14 +614,14 @@
           <GroupName>External_Interfaces</GroupName>
           <Files>
             <File>
-              <FileName>drv_flash_port.c</FileName>
+              <FileName>api_flash_port.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Mod\External_Interfaces\drv_flash_port.c</FilePath>
+              <FilePath>..\Mod\External_Interfaces\api_flash_port.c</FilePath>
             </File>
             <File>
-              <FileName>drv_flash.c</FileName>
+              <FileName>bsp_flash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Mod\External_Interfaces\drv_flash.c</FilePath>
+              <FilePath>..\Mod\External_Interfaces\bsp_flash.c</FilePath>
             </File>
           </Files>
         </Group>

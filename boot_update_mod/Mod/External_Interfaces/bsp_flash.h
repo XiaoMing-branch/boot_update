@@ -20,7 +20,7 @@ flash_cmp_t bsp_cmp_flash(uint32_t addr, uint8_t *buf, uint32_t size);
 RUN_StatusTypeDef bsp_flash_write(uint32_t addr, uint8_t *data, uint32_t size);
 RUN_StatusTypeDef bsp_flash_read(uint32_t addr, uint8_t *buf, uint32_t size);
 RUN_StatusTypeDef bsp_flash_page_erase(uint32_t addr);
-void drv_flash_test(void);
+void bsp_flash_test(void);
 
 #ifdef __cplusplus
 }
