@@ -1,5 +1,5 @@
 #include "api_flash_port.h"
-#include "main.h"
+
 /**
   * @brief  API-flash lock
   * @param  None
@@ -59,10 +59,12 @@ RUN_StatusTypeDef api_flash_page_erase(uint32_t addr)
 	EraseInitStruct.PageAddress   = addr;
 	EraseInitStruct.NbPages     = 1;
 	
+	api_irq_disable();
 	if(HAL_FLASHEx_Erase(&EraseInitStruct,&SECTORError) != HAL_OK)
 	{
 		re = RUN_ERROR;
 	}
+	api_irq_enable();
 	return re;
 }
 

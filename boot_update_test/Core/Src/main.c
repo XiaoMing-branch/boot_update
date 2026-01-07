@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bsp_flash.h"
+#include "app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,7 +35,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define BOOT 0
+#define APP  1
+#define BOOT_AND_APP APP  
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,7 +54,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void JumpToApp(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -65,9 +68,12 @@ void SystemClock_Config(void);
   */
 int main(void)
 {
-
   /* USER CODE BEGIN 1 */
-
+#if (BOOT_AND_APP == BOOT)
+	SCB->VTOR = FLASH_BASE | 0x0;
+#else
+	SCB->VTOR = FLASH_BASE | 0x40000;
+#endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -88,11 +94,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_IWDG_Init();
+  //MX_IWDG_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-	bsp_flash_test();
+#if (BOOT_AND_APP == BOOT)
+	printf("BOOT RUN\r\n");
+	JumpToApp();//跳转到APP
+#else
+	printf("APP RUN\r\n");
+	boot_update();
+#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -100,7 +112,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	HAL_IWDG_Refresh(&hiwdg);
+
+	//HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -147,7 +160,48 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void JumpToApp(void)
+{
+	uint32_t i=0;
+	void (*AppJump)(void);
+    
+	api_irq_disable(); 
+    
+    //时钟切换到默认状态
+	HAL_RCC_DeInit();
+    
+	//关闭滴答定时器，复位到默认值
+	SysTick->CTRL = 0;
+    SysTick->LOAD = 0;
+    SysTick->VAL = 0;
 
+	//关闭所有中断，清除所有中断挂起标志
+	for (i = 0; i < 8; i++)
+	{
+		NVIC->ICER[i]=0xFFFFFFFF;
+		NVIC->ICPR[i]=0xFFFFFFFF;
+	}	
+
+	api_irq_enable();
+
+	//跳转到应用程序，首地址是MSP，地址+4是复位中断服务程序地址
+	AppJump = (void (*)(void)) (*((uint32_t *) (APP_START_ADDR + 4)));
+
+	//设置主堆栈指针
+	__set_MSP(*(uint32_t *)APP_START_ADDR);
+	
+	//在RTOS工程，这条语句很重要，设置为特权级模式，使用MSP指针
+	__set_CONTROL(0);
+	
+	//跳转到系统BootLoader
+	AppJump(); 
+
+	/* 跳转成功的话，不会执行到这里，用户可以在这里添加代码 */
+	while (1)
+	{
+		printf("jump error\r\n");
+	}
+}
 /* USER CODE END 4 */
 
 /**

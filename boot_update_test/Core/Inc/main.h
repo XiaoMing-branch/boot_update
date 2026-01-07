@@ -59,7 +59,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-
+#define BOOT_START_ADDR 0x8000000 //BOOT起始地址
+#define APP_START_ADDR  0x8040000 //APP起始地址
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

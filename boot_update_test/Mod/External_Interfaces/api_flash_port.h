@@ -6,14 +6,42 @@ extern "C" {
 #endif
 
 #include "main.h"
-#include "stdint.h"
 
 #define HAL_FLASH_BASE_ADDR      (uint32_t)(FLASH_BASE)		 			//FLASH起始地址---需按照实际定义
 #define HAL_FLASH_END_ADDR       (uint32_t)(FLASH_BANK1_END) 			//FLASH结束地址---需按照实际定义
+#define HAL_FLASH_PAGE_SIZE	     (1 * 2048)								//页大小---需按照实际定义
+#define HAL_MIN_WRITE_baye        4 									//最小写入字节数---需与bsp_flash_write接口的写入量对应
+
 #define HAL_FLASH_SIZE      (HAL_FLASH_END_ADDR - HAL_FLASH_BASE_ADDR)	//FLASH总容量
-#define HAL_FLASH_PAGE_SIZE	(1 * 1024)									//页大小---需按照实际定义
 #define HAL_FLASH_PAGE_NUMBER (HAL_FLASH_SIZE/HAL_FLASH_PAGE_SIZE) 		//页数
-#define HAL_MIN_WRITE_baye 4 											//最小写入字节数---需与bsp_flash_write接口的写入量对应
+
+#ifndef HAL_FLASH_BASE_ADDR
+    #error "请在当前文件或用户配置文件中定义 HAL_FLASH_BASE_ADDR（FLASH起始地址）"
+#else
+    // 示例值（仅作参考，用户需替换）
+    //#define HAL_FLASH_BASE_ADDR     0x08000000UL  //FLASH起始地址---需按照实际定义
+#endif
+
+#ifndef HAL_FLASH_END_ADDR
+    #error "请在当前文件或用户配置文件中定义 HAL_FLASH_END_ADDR（FLASH结束地址）"
+#else
+    // 示例值（仅作参考，用户需替换）
+    //#define HAL_FLASH_END_ADDR     0x0807FFFFUL  //FLASH结束地址---需按照实际定义
+#endif
+
+#ifndef HAL_FLASH_PAGE_SIZE
+    #error "请在当前文件或用户配置文件中定义 HAL_FLASH_PAGE_SIZE（页大小）"
+#else
+    // 示例值（仅作参考，用户需替换）
+    //#define HAL_FLASH_PAGE_SIZE     (1 * 2048)
+#endif
+
+#ifndef HAL_MIN_WRITE_baye
+    #error "请在当前文件或用户配置文件中定义 HAL_MIN_WRITE_baye（最小写入字节数,需与bsp_flash_write接口的写入量对应）"
+#else
+    // 示例值（仅作参考，用户需替换）
+    //#define HAL_MIN_WRITE_baye     4  
+#endif
 
 typedef enum 
 {
