@@ -89,6 +89,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_IWDG_Init();
+  MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 	bsp_flash_test();
@@ -96,12 +97,10 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	printf("start\r\n");
   while (1)
   {
-	  HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
-	
+	HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

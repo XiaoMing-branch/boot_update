@@ -7,7 +7,9 @@ typedef enum
 	update_finish,   //Íê³É
 	update_error,    //Ê§°Ü
 	update_leisure   //¿ÕÏĞ
-}boot_update_status;
+}boot_update_status_t;
+
+boot_update_status_t boot_update_status = update_ready;
 
 void boot_update_task(void)
 {
@@ -17,6 +19,7 @@ void boot_update_task(void)
 			break;
 		
 		case update_underway:
+			
 			break;
 		
 		case update_finish:

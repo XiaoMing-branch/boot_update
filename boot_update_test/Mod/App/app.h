@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+void boot_update_task(void);
 
 #ifdef __cplusplus
 }
