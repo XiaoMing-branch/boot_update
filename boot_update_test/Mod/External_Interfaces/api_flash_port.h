@@ -17,13 +17,13 @@ extern "C" {
 #define HAL_FLASH_PAGE_NUMBER (HAL_FLASH_SIZE/HAL_FLASH_PAGE_SIZE) 		//页数
 
 #if (HAL_BAND_WIDTH == 1)
-typedef uint8_t  FlashBandwidthType_t;  // 1字节带宽 → 8位类型
+typedef uint8_t  FlashBandwidthType_t;
 #elif (HAL_BAND_WIDTH == 2)
-typedef uint16_t FlashBandwidthType_t;  // 2字节带宽 → 16位类型
+typedef uint16_t FlashBandwidthType_t;
 #elif (HAL_BAND_WIDTH == 4)
-typedef uint32_t FlashBandwidthType_t;  // 4字节带宽 → 32位类型
+typedef uint32_t FlashBandwidthType_t;
 #elif (HAL_BAND_WIDTH == 8)
-typedef uint64_t FlashBandwidthType_t;  // 8字节带宽 → 64位类型
+typedef uint64_t FlashBandwidthType_t;
 #else
 #error "HAL_BAND_WIDTH仅支持1/2/4/8字节"
 #endif

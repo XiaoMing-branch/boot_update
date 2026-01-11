@@ -3,19 +3,18 @@
 /**
   * @brief  比较指定地址的flash与buf内容
   * @param  addr 需要比较的flash首地址
-  * @param  data 比较的数据
+  * @param  data 比较的数据首地址
   * @param  size 比较长度
   * @note   flash_cmp_t
   * @retval None
   */
-flash_cmp_t bsp_cmp_flash(uint32_t addr, void *buf, uint32_t size)
+flash_cmp_t bsp_cmp_flash(uint32_t addr, FlashBandwidthType_t *buf, uint32_t size)
 {
 	flash_cmp_t re = FLASH_PARAM_ERR;
 	uint8_t eq_flag = 1;
-	uint8_t now_byte = 0;
+	FlashBandwidthType_t now_byte = 0;
 	uint8_t exit_flag = 0;
 
-	//如果偏移地址超过芯片容量，则不改写输出缓冲区
 	if((addr + size < HAL_FLASH_BASE_ADDR + HAL_FLASH_SIZE) && (size != 0))
 	{
 		for (uint32_t i = 0; i < size && !exit_flag; i++)
@@ -61,7 +60,7 @@ flash_cmp_t bsp_cmp_flash(uint32_t addr, void *buf, uint32_t size)
 /**
   * @brief  向flash写入数据
   * @param  addr 写入的flash首地址
-  * @param  data 存放读取数据的容器
+  * @param  data 存放写入数据的首地址
   * @param  size 读取长度
   * @note   None  
   * @retval None
@@ -70,8 +69,7 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, void *data, uint32_t size)
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
 	flash_cmp_t cmp_result = FLASH_PARAM_ERR;
-	uint32_t FlashWord[HAL_MIN_WRITE_baye/HAL_BAND_WIDTH] = {0};//用于存放即将写入flash的变量载体
-	/* 如果偏移地址超过芯片容量，则不改写输出缓冲区 */
+	uint32_t FlashWord[HAL_MIN_WRITE_baye/HAL_BAND_WIDTH] = {0};//用于存放不够一次写入flash的数据载体
 	if ((addr + size > HAL_FLASH_BASE_ADDR + HAL_FLASH_SIZE) || (size == 0) || (addr % HAL_MIN_WRITE_baye != 0))
 	{
 		re = RUN_ERROR;
@@ -88,7 +86,7 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, void *data, uint32_t size)
 			api_irq_disable();
 			api_flash_unlock();
 			
-			//写入整数部分,底层接口函数为HAL_MIN_WRITE_baye字节写入 实际写入次数 = 总字节/写入字节
+			//写入整数部分,底层接口函数为HAL_MIN_WRITE_baye字节写入 实际写入次数 = 总字节/写入字节/带宽
 			for(uint32_t i=0;i<(size/(HAL_MIN_WRITE_baye/HAL_BAND_WIDTH));i++)
 			{
 				if(api_flash_write(addr,data) != RUN_OK)
@@ -117,7 +115,7 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, void *data, uint32_t size)
 			
 			end:
 			api_flash_lock();
-			api_irq_enable();/* 开中断 */
+			api_irq_enable();
 		}
 	}
 	return re;
@@ -126,12 +124,12 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, void *data, uint32_t size)
 /**
   * @brief  读取flash内容
   * @param  addr 读取的flash首地址
-  * @param  buf  存放读取数据的容器
+  * @param  buf  存放读取数据的首地址
   * @param  size 读取长度
   * @note   None
   * @retval None
   */
-RUN_StatusTypeDef bsp_flash_read(uint32_t addr, void *buf, uint32_t size)
+RUN_StatusTypeDef bsp_flash_read(uint32_t addr, FlashBandwidthType_t *buf, uint32_t size)
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
 	if((HAL_FLASH_BASE_ADDR <= addr) && (addr <= HAL_FLASH_END_ADDR) && (size != 0) && ((addr + size - 1) <= HAL_FLASH_END_ADDR))
@@ -158,7 +156,6 @@ RUN_StatusTypeDef bsp_flash_read(uint32_t addr, void *buf, uint32_t size)
 RUN_StatusTypeDef bsp_flash_page_erase(uint32_t addr)
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
-	//判断是否在地址范围内并且地址是每一页的首地址
 	if((HAL_FLASH_BASE_ADDR <= addr) && (addr <= HAL_FLASH_END_ADDR) && (addr % HAL_FLASH_PAGE_SIZE == 0))
 	{
 		api_flash_unlock();
