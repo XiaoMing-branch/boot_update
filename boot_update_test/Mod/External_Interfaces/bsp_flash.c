@@ -1,5 +1,4 @@
 #include "bsp_flash.h"
-#include "usart.h"
 
 /**
   * @brief  比较指定地址的flash与buf内容
@@ -9,7 +8,7 @@
   * @note   flash_cmp_t
   * @retval None
   */
-flash_cmp_t bsp_cmp_flash(uint32_t addr, uint8_t *buf, uint32_t size)
+flash_cmp_t bsp_cmp_flash(uint32_t addr, void *buf, uint32_t size)
 {
 	flash_cmp_t re = FLASH_PARAM_ERR;
 	uint8_t eq_flag = 1;
@@ -67,11 +66,11 @@ flash_cmp_t bsp_cmp_flash(uint32_t addr, uint8_t *buf, uint32_t size)
   * @note   None  
   * @retval None
   */
-RUN_StatusTypeDef bsp_flash_write(uint32_t addr, uint8_t *data, uint32_t size)
+RUN_StatusTypeDef bsp_flash_write(uint32_t addr, void *data, uint32_t size)
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
 	flash_cmp_t cmp_result = FLASH_PARAM_ERR;
-	uint64_t FlashWord = 0;//用于存放即将写入flash的变量载体
+	uint32_t FlashWord[HAL_MIN_WRITE_baye/HAL_BAND_WIDTH] = {0};//用于存放即将写入flash的变量载体
 	/* 如果偏移地址超过芯片容量，则不改写输出缓冲区 */
 	if ((addr + size > HAL_FLASH_BASE_ADDR + HAL_FLASH_SIZE) || (size == 0) || (addr % HAL_MIN_WRITE_baye != 0))
 	{
@@ -89,12 +88,10 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, uint8_t *data, uint32_t size)
 			api_irq_disable();
 			api_flash_unlock();
 			
-			//写入整数部分,底层接口函数为4字节写入 实际写入次数 = 总字节/4字节
-			for(uint32_t i=0;i<(size/HAL_MIN_WRITE_baye);i++)
+			//写入整数部分,底层接口函数为HAL_MIN_WRITE_baye字节写入 实际写入次数 = 总字节/写入字节
+			for(uint32_t i=0;i<(size/(HAL_MIN_WRITE_baye/HAL_BAND_WIDTH));i++)
 			{
-				FlashWord = 0;
-				memcpy(&FlashWord,data,HAL_MIN_WRITE_baye);//将uint8_t数组的内容拷贝4个元素组合到uint32中
-				if(api_flash_write(addr, FlashWord) != RUN_OK)
+				if(api_flash_write(addr,data) != RUN_OK)
 				{
 					goto end;
 				}
@@ -103,11 +100,14 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, uint8_t *data, uint32_t size)
 			}
 			
 			//写入零散部分,对长度取余数得到剩下的长度
-			if (size % HAL_MIN_WRITE_baye)
+			if (size % (HAL_MIN_WRITE_baye/HAL_BAND_WIDTH))
 			{
-				FlashWord = 0;
-				memcpy(&FlashWord,data,size % HAL_MIN_WRITE_baye);
-				if(api_flash_write(addr, FlashWord) != RUN_OK)
+                uint32_t remaining_bytes = size % HAL_MIN_WRITE_baye;
+				memset(FlashWord, 0xFF, sizeof(FlashWord));
+				// 将剩余数据拷贝到FlashWord
+                memcpy(FlashWord,data,remaining_bytes);
+
+				if(api_flash_write(addr, (uint32_t *)FlashWord) != RUN_OK)
 				{
 					goto end;
 				}
@@ -131,7 +131,7 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, uint8_t *data, uint32_t size)
   * @note   None
   * @retval None
   */
-RUN_StatusTypeDef bsp_flash_read(uint32_t addr, uint8_t *buf, uint32_t size)
+RUN_StatusTypeDef bsp_flash_read(uint32_t addr, void *buf, uint32_t size)
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
 	if((HAL_FLASH_BASE_ADDR <= addr) && (addr <= HAL_FLASH_END_ADDR) && (size != 0) && ((addr + size - 1) <= HAL_FLASH_END_ADDR))

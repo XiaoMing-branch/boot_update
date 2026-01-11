@@ -8,7 +8,7 @@
   */
 void api_flash_lock(void)
 {
-	HAL_FLASH_Lock();
+
 }
 
 /**
@@ -19,7 +19,7 @@ void api_flash_lock(void)
   */
 void api_flash_unlock(void)	
 {
-	HAL_FLASH_Unlock();
+
 }
 
 /**
@@ -28,10 +28,10 @@ void api_flash_unlock(void)
   * @note   在使用该模块前,需先将底层函数放入接口函数中
   * @retval None
   */
-RUN_StatusTypeDef api_flash_write(uint32_t addr, uint64_t data)
+RUN_StatusTypeDef api_flash_write(uint32_t addr, void* data[])
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
-	if(HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr,data) == HAL_OK)
+	if(NVMCTRL_PageWrite((uint32_t *)data,addr) == true)
 	{
 		re = RUN_OK;
 	}
@@ -51,20 +51,14 @@ RUN_StatusTypeDef api_flash_write(uint32_t addr, uint64_t data)
 RUN_StatusTypeDef api_flash_page_erase(uint32_t addr)
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
-	FLASH_EraseInitTypeDef EraseInitStruct;
-	uint32_t SECTORError = 0;
-	
-	EraseInitStruct.TypeErase     = FLASH_TYPEERASE_PAGES;
-	EraseInitStruct.Banks         = FLASH_BANK_1;
-	EraseInitStruct.PageAddress   = addr;
-	EraseInitStruct.NbPages     = 1;
-	
-	api_irq_disable();
-	if(HAL_FLASHEx_Erase(&EraseInitStruct,&SECTORError) != HAL_OK)
+	if(NVMCTRL_RowErase(addr) == true)
 	{
-		re = RUN_ERROR;
+		return RUN_OK;
 	}
-	api_irq_enable();
+	else
+	{
+		return RUN_ERROR;
+	}
 	return re;
 }
 
