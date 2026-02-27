@@ -28,7 +28,7 @@ void api_flash_unlock(void)
   * @note   在使用该模块前,需先将底层函数放入接口函数中
   * @retval None
   */
-RUN_StatusTypeDef api_flash_write(uint32_t addr, void* data[])
+RUN_StatusTypeDef api_flash_write(uint32_t addr, FlashBandwidthType_t data[])
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
 
