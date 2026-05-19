@@ -100,7 +100,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 #if (BOOT_AND_APP == BOOT)
 	printf("BOOT RUN\r\n");
-	JumpToApp();//��ת��APP
+	JumpToApp();//跳转到APP
 #else
 	printf("APP RUN\r\n");
 	boot_update();
@@ -167,15 +167,15 @@ void JumpToApp(void)
     
 	api_irq_disable(); 
     
-    //ʱ���л���Ĭ��״̬
+    //时钟切换到默认状态
 	HAL_RCC_DeInit();
     
-	//�رյδ�ʱ������λ��Ĭ��ֵ
+	//关闭滴答定时器，复位到默认值
 	SysTick->CTRL = 0;
     SysTick->LOAD = 0;
     SysTick->VAL = 0;
 
-	//�ر������жϣ���������жϹ����־
+	//关闭所有中断，清除所有中断挂起标志
 	for (i = 0; i < 8; i++)
 	{
 		NVIC->ICER[i]=0xFFFFFFFF;
@@ -184,19 +184,19 @@ void JumpToApp(void)
 
 	api_irq_enable();
 
-	//��ת��Ӧ�ó����׵�ַ��MSP����ַ+4�Ǹ�λ�жϷ�������ַ
+	//跳转到应用程序，首地址是MSP，地址+4是复位中断服务程序地址
 	AppJump = (void (*)(void)) (*((uint32_t *) (APP_START_ADDR + 4)));
 
-	//��������ջָ��
+	//设置主堆栈指针
 	__set_MSP(*(uint32_t *)APP_START_ADDR);
 	
-	//��RTOS���̣�����������Ҫ������Ϊ��Ȩ��ģʽ��ʹ��MSPָ��
+	//在RTOS工程，这条语句很重要，设置为特权级模式，使用MSP指针
 	__set_CONTROL(0);
 	
-	//��ת��ϵͳBootLoader
+	//跳转到系统BootLoader
 	AppJump(); 
 
-	/* ��ת�ɹ��Ļ�������ִ�е�����û��������������Ӵ��� */
+	/* 跳转成功的话，不会执行到这里，用户可以在这里添加代码 */
 	while (1)
 	{
 		printf("jump error\r\n");

@@ -10,8 +10,8 @@ extern "C" {
 
 typedef enum
 {
-	FLASH_UGC_EQU		= 0, 	//FlashÄÚÈİºÍ´ıĞ´ÈëµÄÊı¾İÏàµÈ£¬²»ĞèÒª²Á³ıºÍĞ´²Ù×÷
-	FLASH_UGC_UNEQU		= 1,	//Flash²»ÏàµÈ
+	FLASH_UGC_EQU		= 0, 	//Flashå†…å®¹å’Œå¾…å†™å…¥çš„æ•°æ®ç›¸ç­‰ï¼Œä¸éœ€è¦æ“¦é™¤å’Œå†™æ“ä½œ
+	FLASH_UGC_UNEQU		= 1,	//Flashä¸ç›¸ç­‰
 }flash_cmp_t;
 
 flash_cmp_t bsp_cmp_flash(uint32_t addr, FlashBandwidthType_t *buf, uint32_t size);

@@ -98,7 +98,13 @@ def bin_to_multi_bit_c_array(bin_file_path, bit_width, endian='little'):
             multi_bit_data.append(val)
         
         # 生成C文件内容
-        c_content = f"/* 自动生成：{file_name} 转换后的{bit_width}bit二进制数组 */\n"
+        c_content = f"/* 重要提示： */\n"
+        c_content += f"/* 1. 生成的数组应与 FlashBandwidthType_t (由 HAL_BAND_WIDTH 定义) 配合使用 */\n"
+        c_content += f"/* 2. 转换时选择的 bit_width 必须与目标平台的 HAL_BAND_WIDTH 一致 */\n"
+        c_content += f"/*    例如: HAL_BAND_WIDTH=4 (32bit) → 选择32bit转换 */\n"
+        c_content += f"/*    例如: HAL_BAND_WIDTH=1 (8bit)  → 选择8bit转换  */\n"
+        c_content += f"/* 3. 将本文件放入 Mod/ 目录后，app.c 会自动引用 */\n"
+        c_content += f"/* 自动生成：{file_name} 转换后的{bit_width}bit二进制数组 */\n"
         c_content += f"/* 原始Bin字节数：{original_byte_len} 字节 */\n"
         c_content += f"/* 补0字节数：{pad_byte_num} 字节 */\n"
         if bit_width != 8:

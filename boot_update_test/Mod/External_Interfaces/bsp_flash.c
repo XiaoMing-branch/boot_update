@@ -1,36 +1,38 @@
 #include "bsp_flash.h"
 
 /**
-  * @brief  ±È½ÏÖ¸¶¨µØÖ·µÄflashÓëbufÄÚÈİ
-  * @param  addr ĞèÒª±È½ÏµÄflashÊ×µØÖ·
-  * @param  data ±È½ÏµÄÊı¾İÊ×µØÖ·
-  * @param  size ±È½Ï³¤¶È
+  * @brief  æ¯”è¾ƒæŒ‡å®šåœ°å€çš„flashä¸bufå†…å®¹
+  * @param  addr éœ€è¦æ¯”è¾ƒçš„flashé¦–åœ°å€
+  * @param  data æ¯”è¾ƒçš„æ•°æ®é¦–åœ°å€
+  * @param  size æ¯”è¾ƒé•¿åº¦
   * @note   flash_cmp_t
   * @retval None
   */
 flash_cmp_t bsp_cmp_flash(uint32_t addr, FlashBandwidthType_t *buf, uint32_t size)
 {
     flash_cmp_t re = FLASH_UGC_UNEQU;
-
-	for(uint32_t i=0;i<size;i++)
+	if((HAL_FLASH_BASE_ADDR <= addr) && (addr <= HAL_FLASH_END_ADDR) && (size != 0) && (addr + size * sizeof(FlashBandwidthType_t) - 1 <= HAL_FLASH_END_ADDR))
 	{
-		FlashBandwidthType_t flash_data = *(volatile FlashBandwidthType_t *)addr;
-		if(buf[i] != flash_data)
+		for(uint32_t i=0;i<size;i++)
 		{
-			re = FLASH_UGC_UNEQU;
-			return re;
+			FlashBandwidthType_t flash_data = *(volatile FlashBandwidthType_t *)addr;
+			if(buf[i] != flash_data)
+			{
+				re = FLASH_UGC_UNEQU;
+				return re;
+			}
+			addr += HAL_BAND_WIDTH;
 		}
-		addr += HAL_BAND_WIDTH;
+		re = FLASH_UGC_EQU;
 	}
-	re = FLASH_UGC_EQU;
     return re;
 }
 
 /**
-  * @brief  ÏòflashĞ´ÈëÊı¾İ
-  * @param  addr Ğ´ÈëµÄflashÊ×µØÖ·
-  * @param  data ´æ·ÅĞ´ÈëÊı¾İµÄÊ×µØÖ·
-  * @param  size ¶ÁÈ¡³¤¶È
+  * @brief  å‘flashå†™å…¥æ•°æ®
+  * @param  addr å†™å…¥çš„flashé¦–åœ°å€
+  * @param  data å­˜æ”¾å†™å…¥æ•°æ®çš„é¦–åœ°å€
+  * @param  size è¯»å–é•¿åº¦
   * @note   None  
   * @retval None
   */
@@ -38,8 +40,8 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, FlashBandwidthType_t *data, uin
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
 	
-	FlashBandwidthType_t FlashWord[HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH] = {0};//ÓÃÓÚ´æ·Å²»¹»Ò»´ÎĞ´ÈëflashµÄÊı¾İÔØÌå
-	if ((addr + size > HAL_FLASH_BASE_ADDR + HAL_FLASH_SIZE) || (size == 0) || (addr % HAL_MIN_WRITE_BAYE != 0))
+	FlashBandwidthType_t FlashWord[HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH] = {0};//ç”¨äºå­˜æ”¾ä¸å¤Ÿä¸€æ¬¡å†™å…¥flashçš„æ•°æ®è½½ä½“
+	if ((size == 0) || (addr % HAL_MIN_WRITE_BAYE != 0) || (addr + size * sizeof(FlashBandwidthType_t) > HAL_FLASH_BASE_ADDR + HAL_FLASH_SIZE))
 	{
 		re = RUN_ERROR;
 	}
@@ -48,23 +50,23 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, FlashBandwidthType_t *data, uin
 		api_irq_disable();
 		api_flash_unlock();
 		
-		//Ğ´ÈëÕûÊı²¿·Ö,µ×²ã½Ó¿Úº¯ÊıÎªHAL_MIN_WRITE_baye×Ö½ÚĞ´Èë Êµ¼ÊĞ´Èë´ÎÊı = ×Ü×Ö½Ú/Ğ´Èë×Ö½Ú/´ø¿í
+		//å†™å…¥æ•´æ•°éƒ¨åˆ†,åº•å±‚æ¥å£å‡½æ•°ä¸ºHAL_MIN_WRITE_bayeå­—èŠ‚å†™å…¥ å®é™…å†™å…¥æ¬¡æ•° = æ€»å­—èŠ‚/å†™å…¥å­—èŠ‚/å¸¦å®½
 		for(uint32_t i=0;i<(size*HAL_BAND_WIDTH/HAL_MIN_WRITE_BAYE);i++)
 		{
 			if(api_flash_write(addr,data) != RUN_OK)
 			{
 				goto end;
 			}
-			data += HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH;//µØÖ·ÍùºóÆ«ÒÆµ½ÏÂÒ»¸ö±äÁ¿
+			data += HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH;//åœ°å€å¾€ååç§»åˆ°ä¸‹ä¸€ä¸ªå˜é‡
 			addr += HAL_MIN_WRITE_BAYE;
 		}
 		
-		//Ğ´ÈëÁãÉ¢²¿·Ö,¶Ô³¤¶ÈÈ¡ÓàÊıµÃµ½Ê£ÏÂµÄ³¤¶È
+		//å†™å…¥é›¶æ•£éƒ¨åˆ†,å¯¹é•¿åº¦å–ä½™æ•°å¾—åˆ°å‰©ä¸‹çš„é•¿åº¦
 		if (size % (HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH))
 		{
-			uint32_t remaining_byte = size % HAL_MIN_WRITE_BAYE;//µÃµ½Ê£Óà×Ö½ÚÊı
+			uint32_t remaining_byte = (size * sizeof(FlashBandwidthType_t)) % HAL_MIN_WRITE_BAYE;//å¾—åˆ°å‰©ä½™å­—èŠ‚æ•°
 			memset(FlashWord, 0xFF, sizeof(FlashWord));
-			// ½«Ê£ÓàÊı¾İ¿½±´µ½FlashWord
+			// å°†å‰©ä½™æ•°æ®æ‹·è´åˆ°FlashWord
 			memcpy(FlashWord,data,remaining_byte);
 
 			if(api_flash_write(addr,FlashWord) != RUN_OK)
@@ -84,10 +86,10 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, FlashBandwidthType_t *data, uin
 }
 
 /**
-  * @brief  ¶ÁÈ¡flashÄÚÈİ
-  * @param  addr ¶ÁÈ¡µÄflashÊ×µØÖ·
-  * @param  buf  ´æ·Å¶ÁÈ¡Êı¾İµÄÊ×µØÖ·
-  * @param  size ¶ÁÈ¡³¤¶È
+  * @brief  è¯»å–flashå†…å®¹
+  * @param  addr è¯»å–çš„flashé¦–åœ°å€
+  * @param  buf  å­˜æ”¾è¯»å–æ•°æ®çš„é¦–åœ°å€
+  * @param  size è¯»å–é•¿åº¦
   * @note   None
   * @retval None
   */
@@ -110,8 +112,8 @@ RUN_StatusTypeDef bsp_flash_read(uint32_t addr, FlashBandwidthType_t *buf, uint3
 }
 
 /**
-  * @brief  flashÒ³²Á³ı
-  * @param  addr ²Á³ıÒ³µÄÊ×µØÖ·
+  * @brief  flashé¡µæ“¦é™¤
+  * @param  addr æ“¦é™¤é¡µçš„é¦–åœ°å€
   * @note   None
   * @retval None
   */
@@ -132,7 +134,7 @@ RUN_StatusTypeDef bsp_flash_page_erase(uint32_t addr)
 }
 
 /**
-  * @brief  ÓÃÓÚflash¹¦ÄÜÑéÖ¤
+  * @brief  ç”¨äºflashåŠŸèƒ½éªŒè¯
   * @param  None
   * @note   None
   * @retval None
@@ -141,53 +143,53 @@ void bsp_flash_test(void)
 {
 	FlashBandwidthType_t data_32[13] = 
 	{
-		// 0x0102£¨¸ß16Î»£© + 0x0304£¨µÍ16Î»£© ¡ú 0x01020304
+		// 0x0102ï¼ˆé«˜16ä½ï¼‰ + 0x0304ï¼ˆä½16ä½ï¼‰ â†’ 0x01020304
 		0x01020304,
-		// 0x0506 + 0x0708 ¡ú 0x05060708
+		// 0x0506 + 0x0708 â†’ 0x05060708
 		0x05060708,
-		// 0x090A + 0x0B0C ¡ú 0x090A0B0C
+		// 0x090A + 0x0B0C â†’ 0x090A0B0C
 		0x090A0B0C,
-		// 0x0D0E + 0x0F10 ¡ú 0x0D0E0F10
+		// 0x0D0E + 0x0F10 â†’ 0x0D0E0F10
 		0x0D0E0F10,
-		// 0x1112 + 0x1314 ¡ú 0x11121314
+		// 0x1112 + 0x1314 â†’ 0x11121314
 		0x11121314,
-		// 0x1516 + 0x1718 ¡ú 0x15161718
+		// 0x1516 + 0x1718 â†’ 0x15161718
 		0x15161718,
-		// 0x191A + 0x1B1C ¡ú 0x191A1B1C
+		// 0x191A + 0x1B1C â†’ 0x191A1B1C
 		0x191A1B1C,
-		// 0x1D1E + 0x1F20 ¡ú 0x1D1E1F20
+		// 0x1D1E + 0x1F20 â†’ 0x1D1E1F20
 		0x1D1E1F20,
-		// 0x2122 + 0x2324 ¡ú 0x21222324
+		// 0x2122 + 0x2324 â†’ 0x21222324
 		0x21222324,
-		// 0x2526 + 0x2728 ¡ú 0x25262728
+		// 0x2526 + 0x2728 â†’ 0x25262728
 		0x25262728,
-		// 0x292A + 0x2B2C ¡ú 0x292A2B2C
+		// 0x292A + 0x2B2C â†’ 0x292A2B2C
 		0x292A2B2C,
-		// 0x2D2E + 0x2F30 ¡ú 0x2D2E2F30
+		// 0x2D2E + 0x2F30 â†’ 0x2D2E2F30
 		0x2D2E2F30,
-		// Ê£Óà1¸öuint16_t£¨0x3132£© + ²¹0 ¡ú 0x31320000
+		// å‰©ä½™1ä¸ªuint16_tï¼ˆ0x3132ï¼‰ + è¡¥0 â†’ 0x31320000
 		0x31320000
 	};
 	FlashBandwidthType_t r_data[25];
-	printf("¿ªÊ¼²Á³ı\r\n");
+	printf("å¼€å§‹æ“¦é™¤\r\n");
 	bsp_flash_page_erase(0x08007C00);
-	printf("²Á³ıÍê³É\r\n");
-	//¶ÁÈ¡²âÊÔ
+	printf("æ“¦é™¤å®Œæˆ\r\n");
+	//è¯»å–æµ‹è¯•
 	bsp_flash_read(HAL_FLASH_BASE_ADDR+0x7c00,r_data,25);
 	for(uint8_t i=0;i<25;i++)
 	{
-		printf("¶ÁÈ¡µÚ%d¸öÊıÖµ£º%x\r\n",i,r_data[i]);
+		printf("è¯»å–ç¬¬%dä¸ªæ•°å€¼ï¼š%x\r\n",i,r_data[i]);
 	}
-	//Ğ´Èë²âÊÔ
-	printf("¿ªÊ¼Ğ´Èë\r\n");
+	//å†™å…¥æµ‹è¯•
+	printf("å¼€å§‹å†™å…¥\r\n");
 	bsp_flash_write(HAL_FLASH_BASE_ADDR+0x7c00,data_32,13);
-	printf("Ğ´ÈëÍê³É\r\n");
+	printf("å†™å…¥å®Œæˆ\r\n");
 	
 	printf("cmp:%d\r\n",bsp_cmp_flash(0x08007C00,data_32,52));
-	//Ğ´ÈëÑéÖ¤
+	//å†™å…¥éªŒè¯
 	bsp_flash_read(HAL_FLASH_BASE_ADDR+0x7c00,r_data,25);
 	for(uint8_t i=0;i<25;i++)
 	{
-		printf("¶ÁÈ¡µÚ%d¸öÊıÖµ£º%x\r\n",i,r_data[i]);
+		printf("è¯»å–ç¬¬%dä¸ªæ•°å€¼ï¼š%x\r\n",i,r_data[i]);
 	}
 }

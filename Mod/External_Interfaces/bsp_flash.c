@@ -1,17 +1,18 @@
 #include "bsp_flash.h"
 
 /**
-  * @brief  ±È½ÏÖ¸¶¨µØÖ·µÄflashÓëbufÄÚÈİ
-  * @param  addr ĞèÒª±È½ÏµÄflashÊ×µØÖ·
-  * @param  data ±È½ÏµÄÊı¾İÊ×µØÖ·
-  * @param  size ±È½Ï³¤¶È
+  * @brief  æ¯”è¾ƒæŒ‡å®šåœ°å€çš„flashä¸bufå†…å®¹
+  * @param  addr éœ€è¦æ¯”è¾ƒçš„flashé¦–åœ°å€
+  * @param  data æ¯”è¾ƒçš„æ•°æ®é¦–åœ°å€
+  * @param  size æ¯”è¾ƒé•¿åº¦
   * @note   flash_cmp_t
   * @retval None
   */
 flash_cmp_t bsp_cmp_flash(uint32_t addr, FlashBandwidthType_t *buf, uint32_t size)
 {
     flash_cmp_t re = FLASH_UGC_UNEQU;
-
+    if((HAL_FLASH_BASE_ADDR <= addr) && (addr <= HAL_FLASH_END_ADDR) && (size != 0) && (addr + size * sizeof(FlashBandwidthType_t) - 1 <= HAL_FLASH_END_ADDR))
+    {
 	for(uint32_t i=0;i<size;i++)
 	{
 		FlashBandwidthType_t flash_data = *(volatile FlashBandwidthType_t *)addr;
@@ -23,14 +24,15 @@ flash_cmp_t bsp_cmp_flash(uint32_t addr, FlashBandwidthType_t *buf, uint32_t siz
 		addr += HAL_BAND_WIDTH;
 	}
 	re = FLASH_UGC_EQU;
+    }
     return re;
 }
 
 /**
-  * @brief  ÏòflashĞ´ÈëÊı¾İ
-  * @param  addr Ğ´ÈëµÄflashÊ×µØÖ·
-  * @param  data ´æ·ÅĞ´ÈëÊı¾İµÄÊ×µØÖ·
-  * @param  size ¶ÁÈ¡³¤¶È
+  * @brief  å‘flashå†™å…¥æ•°æ®
+  * @param  addr å†™å…¥çš„flashé¦–åœ°å€
+  * @param  data è¦å†™å…¥æ•°æ®çš„é¦–åœ°å€
+  * @param  size è¯»å–é•¿åº¦
   * @note   None  
   * @retval None
   */
@@ -38,8 +40,8 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, FlashBandwidthType_t *data, uin
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
 	
-	FlashBandwidthType_t FlashWord[HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH] = {0};//ÓÃÓÚ´æ·Å²»¹»Ò»´ÎĞ´ÈëflashµÄÊı¾İÔØÌå
-	if ((size == 0) || (addr % HAL_MIN_WRITE_BAYE != 0))
+	FlashBandwidthType_t FlashWord[HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH] = {0};//ç”¨äºå­˜æ”¾ä¸å¤Ÿä¸€æ¬¡å†™å…¥flashçš„é›¶å¤´æ•°æ®
+	if ((size == 0) || (addr % HAL_MIN_WRITE_BAYE != 0) || (addr + size * sizeof(FlashBandwidthType_t) > HAL_FLASH_BASE_ADDR + HAL_FLASH_SIZE))
 	{
 		re = RUN_ERROR;
 	}
@@ -48,23 +50,23 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, FlashBandwidthType_t *data, uin
 		api_irq_disable();
 		api_flash_unlock();
 		
-		//Ğ´ÈëÕûÊı²¿·Ö,µ×²ã½Ó¿Úº¯ÊıÎªHAL_MIN_WRITE_baye×Ö½ÚĞ´Èë Êµ¼ÊĞ´Èë´ÎÊı = ×Ü×Ö½Ú/Ğ´Èë×Ö½Ú/´ø¿í
+		//å†™å…¥ä¸»æ•°æ®å—,åº•å±‚æ¥å£å‡½æ•°ä¸ºHAL_MIN_WRITE_bayeå­—èŠ‚å†™å…¥ å®é™…å†™å…¥æ¬¡æ•° = æ€»å­—èŠ‚/å†™å…¥å­—èŠ‚/æ¬¡æ•°
 		for(uint32_t i=0;i<(size*HAL_BAND_WIDTH/HAL_MIN_WRITE_BAYE);i++)
 		{
 			if(api_flash_write(addr,data) != RUN_OK)
 			{
 				goto end;
 			}
-			data += HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH;//µØÖ·ÍùºóÆ«ÒÆµ½ÏÂÒ»¸ö±äÁ¿
+			data += HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH;//åœ°å€æŒ‡é’ˆåç§»åˆ°ä¸‹ä¸€ä¸ªå†™å…¥ç‚¹
 			addr += HAL_MIN_WRITE_BAYE;
 		}
 		
-		//Ğ´ÈëÁãÉ¢²¿·Ö,¶Ô³¤¶ÈÈ¡ÓàÊıµÃµ½Ê£ÏÂµÄ³¤¶È
+		//å†™å…¥ä½™æ•£æ•°æ®,å¯¹é•¿åº¦å–ä½™å¾—åˆ°å‰©ä¸‹çš„é•¿åº¦
 		if (size % (HAL_MIN_WRITE_BAYE/HAL_BAND_WIDTH))
 		{
-			uint32_t remaining_byte = size % HAL_MIN_WRITE_BAYE;//µÃµ½Ê£Óà×Ö½ÚÊı
+			uint32_t remaining_byte = (size * sizeof(FlashBandwidthType_t)) % HAL_MIN_WRITE_BAYE;//å¾—åˆ°å‰©ä½™å­—èŠ‚æ•°
 			memset(FlashWord, 0xFF, sizeof(FlashWord));
-			// ½«Ê£ÓàÊı¾İ¿½±´µ½FlashWord
+			// å°†å‰©ä½™æ•°æ®æ‹·è´åˆ°FlashWord
 			memcpy(FlashWord,data,remaining_byte);
 
 			if(api_flash_write(addr,FlashWord) != RUN_OK)
@@ -83,35 +85,38 @@ RUN_StatusTypeDef bsp_flash_write(uint32_t addr, FlashBandwidthType_t *data, uin
 }
 
 /**
-  * @brief  ¶ÁÈ¡flashÄÚÈİ
-  * @param  addr ¶ÁÈ¡µÄflashÊ×µØÖ·
-  * @param  buf  ´æ·Å¶ÁÈ¡Êı¾İµÄÊ×µØÖ·
-  * @param  size ¶ÁÈ¡³¤¶È
+  * @brief  è¯»å–flashæ•°æ®
+  * @param  addr è¯»å–çš„flashé¦–åœ°å€
+  * @param  buf  å­˜æ”¾è¯»å–æ•°æ®çš„é¦–åœ°å€
+  * @param  size è¯»å–é•¿åº¦
   * @note   None
   * @retval None
   */
 RUN_StatusTypeDef bsp_flash_read(uint32_t addr, FlashBandwidthType_t *buf, uint32_t size)
 {
-    volatile FlashBandwidthType_t* n = addr;
 	RUN_StatusTypeDef re = RUN_ERROR;
-    for(uint32_t i=0;i<size;i++)
-    {
-        buf[i] = *n++;
-    }
-    re = RUN_OK;
+	if((HAL_FLASH_BASE_ADDR <= addr) && (addr <= HAL_FLASH_END_ADDR) && (size != 0) && (addr + size * sizeof(FlashBandwidthType_t) - 1 <= HAL_FLASH_END_ADDR))
+	{
+		volatile FlashBandwidthType_t* n = addr;
+		for(uint32_t i=0;i<size;i++)
+		{
+			buf[i] = *n++;
+		}
+		re = RUN_OK;
+	}
 	return re;
 }
 
 /**
-  * @brief  flashÒ³²Á³ı
-  * @param  addr ²Á³ıÒ³µÄÊ×µØÖ·
+  * @brief  flashé¡µæ“¦é™¤
+  * @param  addr æ“¦é™¤é¡µçš„é¦–åœ°å€
   * @note   None
   * @retval None
   */
 RUN_StatusTypeDef bsp_flash_page_erase(uint32_t addr)
 {
 	RUN_StatusTypeDef re = RUN_ERROR;
-	if(addr % HAL_FLASH_PAGE_SIZE == 0)
+	if((HAL_FLASH_BASE_ADDR <= addr) && (addr <= HAL_FLASH_END_ADDR) && (addr % HAL_FLASH_PAGE_SIZE == 0))
 	{
 		api_flash_unlock();
 		re = api_flash_page_erase(addr);

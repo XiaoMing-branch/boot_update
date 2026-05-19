@@ -1,7 +1,7 @@
 #include "app.h"
 #include "stdio.h"
-extern const unsigned long bin_buf[];
-extern const unsigned long bin_buf_elem_len;
+extern const FlashBandwidthType_t bin_buf[];
+extern const unsigned long long bin_buf_elem_len;
 
 static uint32_t total_pages = (APP_START_ADDR-BOOT_START_ADDR)/HAL_FLASH_PAGE_SIZE;
 
@@ -19,12 +19,21 @@ void boot_update(void)
 	if(bsp_flash_write(BOOT_START_ADDR,(FlashBandwidthType_t *)bin_buf,(uint32_t)bin_buf_elem_len) == RUN_OK)
 	{
 		printf("write ok\r\n");
+		if(bsp_cmp_flash(BOOT_START_ADDR, bin_buf, (uint32_t)bin_buf_elem_len) == FLASH_UGC_EQU)
+		{
+			printf("cmp ok\r\n");
+		}
+		else
+		{
+			printf("cmp error\r\n");
+		}
 	}
 	else
 	{
 		printf("write error\r\n");
 	}
     
+#ifdef ENABLE_GOTO_FLAG
 	printf("read flag zone:\r\n");
     bsp_flash_read(HAL_GOTO_FLAG_BASE_ADDR,read_buf,HAL_MIN_WRITE_BAYE);
     for(uint32_t i=0;i<HAL_MIN_WRITE_BAYE;i++)
@@ -50,5 +59,6 @@ void boot_update(void)
 
 	printf("go to boot\r\n");
     NVIC_SystemReset();
+#endif
 }
 

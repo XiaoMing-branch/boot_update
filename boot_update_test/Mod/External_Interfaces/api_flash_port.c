@@ -3,7 +3,7 @@
 /**
   * @brief  API-flash lock
   * @param  None
-  * @note   ÔÚÊ¹ÓÃ¸ÃÄ£¿éÇ°,ĞèÏÈ½«µ×²ãº¯Êı·ÅÈë½Ó¿Úº¯ÊıÖĞ
+  * @note   åœ¨ä½¿ç”¨è¯¥æ¨¡å—å‰,éœ€å…ˆå°†åº•å±‚å‡½æ•°æ”¾å…¥æ¥å£å‡½æ•°ä¸­
   * @retval None
   */
 void api_flash_lock(void)
@@ -14,7 +14,7 @@ void api_flash_lock(void)
 /**
   * @brief  API-flash unlock
   * @param  None
-  * @note   ÔÚÊ¹ÓÃ¸ÃÄ£¿éÇ°,ĞèÏÈ½«µ×²ãº¯Êı·ÅÈë½Ó¿Úº¯ÊıÖĞ
+  * @note   åœ¨ä½¿ç”¨è¯¥æ¨¡å—å‰,éœ€å…ˆå°†åº•å±‚å‡½æ•°æ”¾å…¥æ¥å£å‡½æ•°ä¸­
   * @retval None
   */
 void api_flash_unlock(void)	
@@ -25,7 +25,7 @@ void api_flash_unlock(void)
 /**
   * @brief  API-flash writr
   * @param  None
-  * @note   ÔÚÊ¹ÓÃ¸ÃÄ£¿éÇ°,ĞèÏÈ½«µ×²ãº¯Êı·ÅÈë½Ó¿Úº¯ÊıÖĞ
+  * @note   åœ¨ä½¿ç”¨è¯¥æ¨¡å—å‰,éœ€å…ˆå°†åº•å±‚å‡½æ•°æ”¾å…¥æ¥å£å‡½æ•°ä¸­
   * @retval None
   */
 RUN_StatusTypeDef api_flash_write(uint32_t addr, FlashBandwidthType_t data[])
@@ -47,7 +47,7 @@ RUN_StatusTypeDef api_flash_write(uint32_t addr, FlashBandwidthType_t data[])
 /**
   * @brief  API-flash page erase
   * @param  None
-  * @note   ÔÚÊ¹ÓÃ¸ÃÄ£¿éÇ°,ĞèÏÈ½«µ×²ãº¯Êı·ÅÈë½Ó¿Úº¯ÊıÖĞ
+  * @note   åœ¨ä½¿ç”¨è¯¥æ¨¡å—å‰,éœ€å…ˆå°†åº•å±‚å‡½æ•°æ”¾å…¥æ¥å£å‡½æ•°ä¸­
   * @retval None
   */
 RUN_StatusTypeDef api_flash_page_erase(uint32_t addr)
@@ -75,7 +75,7 @@ RUN_StatusTypeDef api_flash_page_erase(uint32_t addr)
 /**
   * @brief  API-enable irq
   * @param  None
-  * @note   ÔÚÊ¹ÓÃ¸ÃÄ£¿éÇ°,ĞèÏÈ½«µ×²ãº¯Êı·ÅÈë½Ó¿Úº¯ÊıÖĞ
+  * @note   åœ¨ä½¿ç”¨è¯¥æ¨¡å—å‰,éœ€å…ˆå°†åº•å±‚å‡½æ•°æ”¾å…¥æ¥å£å‡½æ•°ä¸­
   * @retval None
   */
 void api_irq_enable(void)
@@ -88,7 +88,7 @@ void api_irq_enable(void)
 /**
   * @brief  API-disable irq
   * @param  None
-  * @note   ÔÚÊ¹ÓÃ¸ÃÄ£¿éÇ°,ĞèÏÈ½«µ×²ãº¯Êı·ÅÈë½Ó¿Úº¯ÊıÖĞ
+  * @note   åœ¨ä½¿ç”¨è¯¥æ¨¡å—å‰,éœ€å…ˆå°†åº•å±‚å‡½æ•°æ”¾å…¥æ¥å£å‡½æ•°ä¸­
   * @retval None
   */
 void api_irq_disable(void)
