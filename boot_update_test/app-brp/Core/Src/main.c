@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : APP 演示程序 (位于 0x08010000,由 Boot 通过 YMODEM 升级)
+  * @brief          : app-brp APP 工程 (0x08010000):集成 Mod 模组,上电自动升级 BOOT
   ******************************************************************************
   */
 /* USER CODE END Header */
@@ -10,6 +10,7 @@
 #include "main.h"
 #include "usart.h"
 #include "gpio.h"
+#include "app.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -43,8 +44,11 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
-  printf("\r\n===== STM32 APP1 %s @ 0x%08X =====\r\n", APP_VERSION, APP_BASE);
-  printf("APP1 is running...\r\n");
+  printf("\r\n===== STM32 APP-BRP %s @ 0x%08X =====\r\n", APP_VERSION, APP_BASE);
+  printf("APP-BRP is running...\r\n");
+
+  /* Mod 模组:上电自动升级 BOOT 区(bin_buf 由 bin2c 从 boot 镜像生成) */
+  boot_update();
   /* USER CODE END 2 */
 
   /* Infinite loop */

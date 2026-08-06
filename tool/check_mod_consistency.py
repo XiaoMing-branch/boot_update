@@ -19,7 +19,7 @@ import sys
 
 BASE_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 MOD_DIR = os.path.join(BASE_DIR, "Mod")
-TEST_MOD_DIR = os.path.join(BASE_DIR, "boot_update_test", "boot", "Mod")
+TEST_MOD_DIR = os.path.join(BASE_DIR, "boot_update_test", "app-brp", "Mod")
 
 passed = 0
 failed = 0
@@ -220,7 +220,7 @@ def check_mod_test_consistency():
 
         if not test_content:
             report(f"{subdir}/{fname} consistency", False,
-                   f"cannot read boot_update_test/Mod/{subdir}/{fname}")
+                   f"cannot read {os.path.relpath(test_path, BASE_DIR)}")
             all_consistent = False
             continue
 

@@ -5,7 +5,9 @@ extern const unsigned long long bin_buf_elem_len;
 
 static uint32_t total_pages = (APP_START_ADDR-BOOT_START_ADDR)/HAL_FLASH_PAGE_SIZE;
 
+#ifdef ENABLE_GOTO_FLAG
 static FlashBandwidthType_t read_buf[HAL_MIN_WRITE_BAYE];
+#endif
 
 void boot_update(void)
 {
@@ -35,7 +37,7 @@ void boot_update(void)
     if(bsp_flash_write(BOOT_START_ADDR,(FlashBandwidthType_t *)bin_buf,(uint32_t)bin_buf_elem_len) == RUN_OK)
     {
         printf("write ok\r\n");
-        if(bsp_cmp_flash(BOOT_START_ADDR, bin_buf, (uint32_t)bin_buf_elem_len) == FLASH_UGC_EQU)
+		if(bsp_cmp_flash(BOOT_START_ADDR, (FlashBandwidthType_t *)bin_buf, (uint32_t)bin_buf_elem_len) == FLASH_UGC_EQU)
         {
             printf("cmp ok\r\n");
 #ifdef ENABLE_GOTO_FLAG

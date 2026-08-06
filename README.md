@@ -47,7 +47,7 @@
 ### 可移植性
 - **零依赖模板**：`Mod/` 目录为纯C模板，不含任何HAL或平台特定代码
 - **接口抽象层**：通过 `api_flash_port.h` / `.c` 隔离平台差异
-- **参考实现**：`boot_update_test/boot/Mod/` 提供完整的STM32F103移植示例
+- **参考实现**：`boot_update_test/app-brp/Mod/` 提供完整的STM32F103移植示例
 
 ### 配套工具
 - **bin2c.py**：将二进制固件文件自动转为C数组，支持 8/16/32-bit 和大/小端
@@ -98,7 +98,7 @@
 | 目录 | 角色 | 说明 |
 |------|------|------|
 | `Mod/` | **平台无关模板** | 完全可移植的纯C代码，不留存任何HAL依赖 |
-| `boot_update_test/boot/Mod/` | **参考实现** | STM32F103 BootLoader 工程中的移植，包含 `bsp_flash_test()` 验证函数 |
+| `boot_update_test/app-brp/Mod/` | **参考实现** | STM32F103 BootLoader 工程中的移植，包含 `bsp_flash_test()` 验证函数 |
 
 两目录通过 `tool/check_mod_consistency.py` 保证核心函数一致性。
 
@@ -106,8 +106,11 @@
 
 | 工程 | 链接地址 | 工程文件 | 功能 |
 |------|----------|----------|------|
-| `boot/` | 0x08000000（64KB） | `boot/MDK-ARM/boot.uvprojx` | BootLoader：上电等待 YMODEM 串口升级 → 写入 APP 区 → 校验 → 跳转 APP |
-| `app/` | 0x08010000（448KB） | `app/MDK-ARM/app.uvprojx` | APP 演示程序，构建后由 `fromelf` 输出 `app_update.bin` 供 YMODEM 上传 |
+| `app-brp/` | 0x08010000（448KB） | `app-brp/MDK-ARM/app-brp.uvprojx` | **Mod 框架 APP**：上电调用 `boot_update()` 擦除并写入 BOOT 区（`bin_buf` 由 bin2c 生成）→ 校验 → 升级 BOOT |
+| `app/` | 0x08010000（448KB） | `app/MDK-ARM/app.uvprojx` | 普通 APP 演示程序（LED 闪烁 + 串口打印） |
+| `boot/` | —— | —— | **移植前参考**：原始 Boot 工程（`Mod/` 已移除，不编译），保留作对照 |
+
+> 注：`boot/` 为移植前参考，勿修改；如需 BootLoader 可基于它重新移植 Mod。
 
 ---
 
@@ -126,12 +129,12 @@
 │
 ├── boot_update_test/                       # STM32F103 参考实现
 │   ├── Drivers/                            # 共享 STM32F1xx HAL + CMSIS (两工程共用)
-│   ├── boot/                               # BootLoader 工程 (烧录 0x08000000)
-│   │   ├── Core/Src/main.c                 #   YMODEM IAP 主流程
-│   │   ├── Mod/                            #   STM32F103 移植版 Mod (含 HAL 实现)
-│   │   ├── Ymodem/                         #   YMODEM 协议接收模块 (ymodem.c/.h)
-│   │   └── MDK-ARM/                        #   boot.uvprojx
-│   └── app/                                # APP 演示工程 (0x08010000)
+│   ├── app-brp/                           # Mod 框架 APP 工程 (0x08010000,上电升级 BOOT)
+│   │   ├── Core/Src/main.c                 #   上电调 boot_update() 升级 BOOT
+│   │   ├── Mod/                            #   STM32F103 移植版 Mod + BOOT1.c(bin_buf)
+│   │   └── MDK-ARM/                        #   app-brp.uvprojx
+│   ├── boot/                               # 【移植前参考】旧 Boot 工程(Mod 已移除,不编译)
+│   └── app/                                # 普通 APP 演示工程 (0x08010000)
 │       ├── Core/Src/main.c                 #   APP demo (LED 闪烁 + 串口打印)
 │       └── MDK-ARM/                        #   app.uvprojx (输出 app_update.bin)
 │
@@ -251,7 +254,7 @@ Boot（`boot_update_test/boot/`）实现基于 YMODEM 协议的串口 IAP 升级
 ### 步骤4：使用一致性检查验证移植
 
 ```bash
-# 将移植后的 Mod/ 复制为 boot_update_test/boot/Mod/
+# 将移植后的 Mod/ 复制为 boot_update_test/app-brp/Mod/
 # 运行一致性检查
 python tool/check_mod_consistency.py
 # 所有 11 项检查均应 PASS
@@ -285,7 +288,7 @@ python tool/bin2c/bin2c.py
 
 ### check_mod_consistency.py — 一致性检查
 
-检查 `Mod/` 和 `boot_update_test/boot/Mod/` 的一致性：
+检查 `Mod/` 和 `boot_update_test/app-brp/Mod/` 的一致性：
 
 ```
 11项检查：
@@ -294,7 +297,7 @@ python tool/bin2c/bin2c.py
   3. 无非法引用（mid_eeprom.h）
   4. bsp_cmp_flash 写后验证
   5. FlashBandwidthType_t 类型定义
-  6-11. Mod/ 与 boot_update_test/boot/Mod/ 一致性
+  6-11. Mod/ 与 boot_update_test/app-brp/Mod/ 一致性
 ```
 
 ### check_compile.py — 编译检查
@@ -324,7 +327,7 @@ python tool/check_compile.py
 |------|------|
 | Mod/ 平台无关模板 | ✅ 编译通过，无语法错误 |
 | boot_update_test/ 参考实现 | ✅ MDK-ARM编译通过 |
-| Mod/ ↔ boot_update_test/boot/Mod/ 一致性 | ✅ 11/11 检查全部PASS |
+| Mod/ ↔ boot_update_test/app-brp/Mod/ 一致性 | ✅ 11/11 检查全部PASS |
 | 地址越界保护 | ✅ 所有Flash操作均含边界检查 |
 | 写入校验 | ✅ bsp_flash_write后自动验证 |
 

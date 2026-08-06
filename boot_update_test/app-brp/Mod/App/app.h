@@ -5,7 +5,10 @@
 extern "C" {
 #endif
 
-#include "../Mod/External_Interfaces/bsp_flash.h"
+#include "bsp_flash.h"
+
+#define BOOT_START_ADDR 0x8000000
+#define APP_START_ADDR  0x8010000
 
 #ifndef APP_START_ADDR 
     #error "请在当前文件或用户配置文件中定义 APP_START_ADDR（APP起始地址）"

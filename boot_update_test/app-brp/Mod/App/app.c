@@ -37,7 +37,7 @@ void boot_update(void)
     if(bsp_flash_write(BOOT_START_ADDR,(FlashBandwidthType_t *)bin_buf,(uint32_t)bin_buf_elem_len) == RUN_OK)
     {
         printf("write ok\r\n");
-		if(bsp_cmp_flash(BOOT_START_ADDR, (FlashBandwidthType_t *)bin_buf, (uint32_t)bin_buf_elem_len) == FLASH_UGC_EQU)
+				if(bsp_cmp_flash(BOOT_START_ADDR, (FlashBandwidthType_t *)bin_buf, (uint32_t)bin_buf_elem_len) == FLASH_UGC_EQU)
         {
             printf("cmp ok\r\n");
 #ifdef ENABLE_GOTO_FLAG

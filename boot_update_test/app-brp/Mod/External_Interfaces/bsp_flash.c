@@ -99,7 +99,7 @@ RUN_StatusTypeDef bsp_flash_read(uint32_t addr, FlashBandwidthType_t *buf, uint3
     RUN_StatusTypeDef re = RUN_ERROR;
     if((HAL_FLASH_BASE_ADDR <= addr) && (addr <= HAL_FLASH_END_ADDR) && (size != 0) && (addr + size * sizeof(FlashBandwidthType_t) - 1 <= HAL_FLASH_END_ADDR))
     {
-        volatile FlashBandwidthType_t* n = addr;
+		volatile FlashBandwidthType_t* n = (volatile FlashBandwidthType_t *)addr;
         for(uint32_t i=0;i<size;i++)
         {
             buf[i] = *n++;
