@@ -33,12 +33,9 @@ JLinkLog.txt
 __pycache__/
 *.pyc
  
-#tool build outputs
+#tool build outputs (PyInstaller 中间产物;dist 下的 exe 需跟踪)
 tool/bin2c/build/
-tool/bin2c/dist/
-tool/build/
-tool/hex2bin-2.5/hex2bin-2.5/Debug/
-tool/hex2bin-2.5/hex2bin-2.5/Release/
+tool/ymodem_upload/build/
  
 !*.uvprojx
 !*.h
