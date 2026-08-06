@@ -13,18 +13,33 @@
 *.iex
 *.sct
 *.scvd
-*.uvguix
 *.dbg*
 *.uvguix.*
+*.uvoptx
+*.uvopt
+*.axf
+*.bin
+*.hex
+*.__i
+*._ia
 .mxproject
  
 RTE/
 Objects/
+Listings/
+JLinkLog.txt
+ 
+#python
+__pycache__/
+*.pyc
+ 
+#tool build outputs
+tool/bin2c/build/
+tool/bin2c/dist/
+tool/hex2bin-2.5/hex2bin-2.5/Debug/
+tool/hex2bin-2.5/hex2bin-2.5/Release/
  
 !*.uvprojx
 !*.h
 !*.c
 !*.ioc
-!*.axf
-!*.bin
-!*.hex
