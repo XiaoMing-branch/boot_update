@@ -1,4 +1,4 @@
-﻿
+
 boot_update_test\Mod\External_Interfaces\api_flash_port.c:35:	if(HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr,(uint64
 _t)data[0]) == HAL_OK)
 boot_update_test\Mod\External_Interfaces\api_flash_port.c:63:	if(HAL_FLASHEx_Erase(&pEraseInit,&PageError) == HAL_OK)

@@ -17,7 +17,7 @@ void api_flash_lock(void)
   * @note   在使用该模块前,需先将底层函数放入接口函数中
   * @retval None
   */
-void api_flash_unlock(void)	
+void api_flash_unlock(void)    
 {
 
 }
@@ -30,9 +30,9 @@ void api_flash_unlock(void)
   */
 RUN_StatusTypeDef api_flash_write(uint32_t addr, FlashBandwidthType_t data[])
 {
-	RUN_StatusTypeDef re = RUN_ERROR;
+    RUN_StatusTypeDef re = RUN_ERROR;
 
-	return re;
+    return re;
 }
 
 /**
@@ -43,9 +43,9 @@ RUN_StatusTypeDef api_flash_write(uint32_t addr, FlashBandwidthType_t data[])
   */
 RUN_StatusTypeDef api_flash_page_erase(uint32_t addr)
 {
-	RUN_StatusTypeDef re = RUN_ERROR;
+    RUN_StatusTypeDef re = RUN_ERROR;
 
-	return re;
+    return re;
 }
 
 /**
@@ -57,9 +57,9 @@ RUN_StatusTypeDef api_flash_page_erase(uint32_t addr)
 /* USER CODE BEGIN 1 */
 RUN_StatusTypeDef api_flash_write_eepro(uint32_t addr, FlashBandwidthType_t data[])
 {
-	RUN_StatusTypeDef re = RUN_ERROR;
+    RUN_StatusTypeDef re = RUN_ERROR;
 
-	return re;
+    return re;
 }
 /* USER CODE END 1 */
 
@@ -72,9 +72,9 @@ RUN_StatusTypeDef api_flash_write_eepro(uint32_t addr, FlashBandwidthType_t data
 /* USER CODE BEGIN 2 */
 RUN_StatusTypeDef api_flash_page_erase_eepro(uint32_t addr)
 {
-	RUN_StatusTypeDef re = RUN_ERROR;
+    RUN_StatusTypeDef re = RUN_ERROR;
 
-	return re;
+    return re;
 }
 /* USER CODE END 2 */
 
