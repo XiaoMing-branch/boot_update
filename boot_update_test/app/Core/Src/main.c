@@ -46,23 +46,15 @@ int main(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   uint32_t cnt = 0;
 
-  /* PC13 LED(部分开发板为低电平点亮),仅作运行指示 */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  printf("\r\n===== STM32 APP2 %s @ 0x%08X =====\r\n", APP_VERSION, APP_BASE);
-  printf("APP2 is running...\r\n");
+  printf("\r\n===== STM32 APP1 %s @ 0x%08X =====\r\n", APP_VERSION, APP_BASE);
+  printf("APP1 is running...\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   while (1)
   {
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-    printf("APP2 alive, tick=%lu\r\n", (unsigned long)cnt++);
+    printf("APP1 alive, tick=%lu\r\n", (unsigned long)cnt++);
     HAL_Delay(500);
   }
 }
