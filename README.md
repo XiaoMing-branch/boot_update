@@ -47,7 +47,7 @@
 ### 可移植性
 - **零依赖模板**：`Mod/` 目录为纯C模板，不含任何HAL或平台特定代码
 - **接口抽象层**：通过 `api_flash_port.h` / `.c` 隔离平台差异
-- **参考实现**：`boot_update_test/Mod/` 提供完整的STM32F103移植示例
+- **参考实现**：`boot_update_test/boot/Mod/` 提供完整的STM32F103移植示例
 
 ### 配套工具
 - **bin2c.py**：将二进制固件文件自动转为C数组，支持 8/16/32-bit 和大/小端
@@ -98,9 +98,16 @@
 | 目录 | 角色 | 说明 |
 |------|------|------|
 | `Mod/` | **平台无关模板** | 完全可移植的纯C代码，不留存任何HAL依赖 |
-| `boot_update_test/Mod/` | **参考实现** | STM32F103上的完整移植，包含 `bsp_flash_test()` 验证函数 |
+| `boot_update_test/boot/Mod/` | **参考实现** | STM32F103 BootLoader 工程中的移植，包含 `bsp_flash_test()` 验证函数 |
 
 两目录通过 `tool/check_mod_consistency.py` 保证核心函数一致性。
+
+### 双工程结构（`boot_update_test/`）
+
+| 工程 | 链接地址 | 工程文件 | 功能 |
+|------|----------|----------|------|
+| `boot/` | 0x08000000（64KB） | `boot/MDK-ARM/boot.uvprojx` | BootLoader：上电等待 YMODEM 串口升级 → 写入 APP 区 → 校验 → 跳转 APP |
+| `app/` | 0x08010000（448KB） | `app/MDK-ARM/app.uvprojx` | APP 演示程序，构建后由 `fromelf` 输出 `app_update.bin` 供 YMODEM 上传 |
 
 ---
 
@@ -117,13 +124,16 @@
 │       ├── bsp_flash.h                     # Flash操作头文件
 │       └── bsp_flash.c                     # Flash写/读/比较/擦除实现
 │
-├── boot_update_test/                       # STM32F103 参考实现工程
-│   ├── Mod/                                # STM32F103已移植版的Mod
-│   │   ├── App/                            #   (app.c/app.h)
-│   │   └── External_Interfaces/            #   (含STM32 HAL实现)
-│   ├── Core/Src/main.c                     # 主函数，BOOT/APP切换逻辑
-│   ├── MDK-ARM/                            # Keil MDK工程文件
-│   └── Drivers/                            # STM32F1xx HAL驱动
+├── boot_update_test/                       # STM32F103 参考实现
+│   ├── Drivers/                            # 共享 STM32F1xx HAL + CMSIS (两工程共用)
+│   ├── boot/                               # BootLoader 工程 (烧录 0x08000000)
+│   │   ├── Core/Src/main.c                 #   YMODEM IAP 主流程
+│   │   ├── Mod/                            #   STM32F103 移植版 Mod (含 HAL 实现)
+│   │   ├── Ymodem/                         #   YMODEM 协议接收模块 (ymodem.c/.h)
+│   │   └── MDK-ARM/                        #   boot.uvprojx
+│   └── app/                                # APP 演示工程 (0x08010000)
+│       ├── Core/Src/main.c                 #   APP demo (LED 闪烁 + 串口打印)
+│       └── MDK-ARM/                        #   app.uvprojx (输出 app_update.bin)
 │
 ├── tool/
 │   ├── bin2c/bin2c.py                      # 固件转C数组工具
@@ -187,6 +197,22 @@ int main(void) {
 
 ---
 
+## YMODEM 串口升级（IAP）
+
+Boot（`boot_update_test/boot/`）实现基于 YMODEM 协议的串口 IAP 升级：
+
+1. **烧录**：先用 Keil 将 `boot.uvprojx` 编译的 boot 固件烧录到 0x08000000（J-Flash/ST-LINK 均可）。
+2. **构建 APP**：用 Keil 打开 `app.uvprojx` 编译，构建后自动在 `app/MDK-ARM/` 生成 `app_update.bin`。
+3. **升级**（两种方式任选）：
+   - 简易上位机（推荐）：`python tool/ymodem_upload.py -p COM5 -f app_update.bin`（需 `pip install pyserial`；启动后请在 15 秒内复位目标板，使 Boot 处于等待升级状态）。
+   - 通用串口工具：上电后 Boot 在串口（USART1，115200）打印提示并等待 5 秒。在等待窗口内用 Tera Term / SecureCRT 等选择 **YMODEM → Send File…** 上传 `app_update.bin`。
+4. Boot 收到固件后：擦除 APP 区 → 逐块写入 → `bsp_cmp_flash` 校验 → 跳转 APP（0x08010000）。
+5. 若 APP 区无有效固件，Boot 会持续等待升级，不会进入死循环。
+
+**注意**：升级完成后需重新上电或复位才会再次进入升级等待窗口；正常运行时 Boot 直接跳转 APP。
+
+---
+
 ## 移植指南
 
 将本项目移植到新MCU平台的步骤：
@@ -225,7 +251,7 @@ int main(void) {
 ### 步骤4：使用一致性检查验证移植
 
 ```bash
-# 将移植后的 Mod/ 复制为 boot_update_test/Mod/
+# 将移植后的 Mod/ 复制为 boot_update_test/boot/Mod/
 # 运行一致性检查
 python tool/check_mod_consistency.py
 # 所有 11 项检查均应 PASS
@@ -259,7 +285,7 @@ python tool/bin2c/bin2c.py
 
 ### check_mod_consistency.py — 一致性检查
 
-检查 `Mod/` 和 `boot_update_test/Mod/` 的一致性：
+检查 `Mod/` 和 `boot_update_test/boot/Mod/` 的一致性：
 
 ```
 11项检查：
@@ -268,7 +294,7 @@ python tool/bin2c/bin2c.py
   3. 无非法引用（mid_eeprom.h）
   4. bsp_cmp_flash 写后验证
   5. FlashBandwidthType_t 类型定义
-  6-11. Mod/ 与 boot_update_test/Mod/ 一致性
+  6-11. Mod/ 与 boot_update_test/boot/Mod/ 一致性
 ```
 
 ### check_compile.py — 编译检查
@@ -298,7 +324,7 @@ python tool/check_compile.py
 |------|------|
 | Mod/ 平台无关模板 | ✅ 编译通过，无语法错误 |
 | boot_update_test/ 参考实现 | ✅ MDK-ARM编译通过 |
-| Mod/ ↔ boot_update_test/Mod/ 一致性 | ✅ 11/11 检查全部PASS |
+| Mod/ ↔ boot_update_test/boot/Mod/ 一致性 | ✅ 11/11 检查全部PASS |
 | 地址越界保护 | ✅ 所有Flash操作均含边界检查 |
 | 写入校验 | ✅ bsp_flash_write后自动验证 |
 

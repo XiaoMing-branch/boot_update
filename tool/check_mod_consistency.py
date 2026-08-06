@@ -19,7 +19,7 @@ import sys
 
 BASE_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 MOD_DIR = os.path.join(BASE_DIR, "Mod")
-TEST_MOD_DIR = os.path.join(BASE_DIR, "boot_update_test", "Mod")
+TEST_MOD_DIR = os.path.join(BASE_DIR, "boot_update_test", "boot", "Mod")
 
 passed = 0
 failed = 0

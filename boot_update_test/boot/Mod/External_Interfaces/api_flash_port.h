@@ -20,7 +20,7 @@ extern "C" {
 #define HAL_GOTO_FLAG_OFFSET	  1										//跳转标志位偏移量（单位 FlashBandwidthType_t）
 #define HAL_GOTO_FLAG_PARAM		  0x00000005				
 #endif /* ENABLE_GOTO_FLAG */
-#define HAL_FLASH_PAGE_SIZE	     (1 * 1024)								//页大小---请按实际定义
+#define HAL_FLASH_PAGE_SIZE	     (1 * 2048)								//页大小---请按实际定义
 #define HAL_MIN_WRITE_BAYE        4 									//最小写入字节数---与bsp_flash_write接口的写大小对应
 #define HAL_BAND_WIDTH            4                                     //带宽字节数
 

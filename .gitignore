@@ -36,6 +36,8 @@ __pycache__/
 #tool build outputs
 tool/bin2c/build/
 tool/bin2c/dist/
+tool/build/
+tool/dist/
 tool/hex2bin-2.5/hex2bin-2.5/Debug/
 tool/hex2bin-2.5/hex2bin-2.5/Release/
  
